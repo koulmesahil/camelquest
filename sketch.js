@@ -191,7 +191,7 @@ if (portal) {
 
     if (portalTimer >= 3) { // Change timer to 3 seconds
       // Redirect to another page
-      window.location.href = "https://koulmesahil.github.io/"; // Replace with your desired URL or page
+      window.location.href = "https://koulmesahil.github.io/InteractiveResumeGame/"; // Replace with your desired URL or page
     }
   } else {
     portalActive = false;
