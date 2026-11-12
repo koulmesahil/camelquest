@@ -1,45 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camel Quest</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="sketch.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#f3e1b6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Camel Quest: an endless desert runner. Collect shawarma, dodge cacti, find the portal.">
+  <title>Camel Quest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
-
 <body>
-    <div id="loading-screen">Loading your camel adventure...</div>
+  <div id="app">
+    <canvas id="c"></canvas>
 
-    <div class="main-container">
-        <!-- Game Section -->
-        <div id="game-section">
-            <div id="sketch-container"></div>
+    <!-- In-game HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="hp" title="Health">
+          <span class="hp-icon">&#10084;</span>
+          <div class="bar"><i id="hp-fill"></i></div>
         </div>
-
-        <!-- Info Section -->
-        <div id="info-section">
-            <h1>Camel Quest</h1>
-            <a href="https://koulmesahil.github.io/" class="home-button" target="_blank">🏠 Home</a>
-
-            <div class="instructions">
-                <h2>Instructions:</h2>
-                <p>Press <strong>Enter</strong> to start </p>
-                <p><span class="emoji">🌵</span> Stay away from the <strong>Cactus</strong></p>
-                <p><span class="emoji">🥙</span> Collect <strong>Shawarma</strong> to open the portal</p>
-                <p><span class="emoji">🚪</span> Stay in the portal for <strong>5 seconds</strong> to use it</p>
-                <h3>Controls:</h3>
-                <ul>
-                    <li><span class="emoji">⬅️</span> <span class="emoji">➡️</span> Use <strong>Left and Right Keys</strong> to move </li>
-                    <li><span class="emoji">🔄</span> Press <strong>R</strong> to restart the game</li>
-                </ul>
-            </div>
-
+        <div class="score"><b id="score">0</b><small>m</small></div>
+        <div class="hud-right">
+          <div class="shaw"><span class="shaw-ico"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(32 32 32)"><path d="M22 10c0-4 20-4 20 0l4 34c0 8-28 8-28 0z" fill="#f2d9a0" stroke="#c99a52" stroke-width="3" stroke-linejoin="round"/><path d="M19 38h26l1 6c0 8-28 8-28 0z" fill="#fffdf6" stroke="#d8c9a8" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 43h24" stroke="#d94a3a" stroke-width="3.5"/><ellipse cx="32" cy="11" rx="10" ry="5" fill="#8a4a24"/><path d="M22 11c3-6 17-6 20 0" fill="none" stroke="#5fae4a" stroke-width="4" stroke-linecap="round"/></g></svg></span><b id="shaw">0</b><small id="shaw-goal">/10</small></div>
+          <button id="btn-mute" class="round" aria-label="Sound">&#128266;</button>
+          <button id="btn-pause" class="round" aria-label="Pause">&#10074;&#10074;</button>
         </div>
+      </div>
+      <div id="portal-pill" class="hidden">&#127744; Portal open &mdash; run for the glowing gate!</div>
     </div>
-</body>
 
+    <div id="toast"></div>
+    <div id="flash"></div>
+
+    <!-- Title screen -->
+    <div id="screen-menu" class="screen">
+      <div class="menu-top">
+        <h1>Camel<span>Quest</span></h1>
+        <p class="tag">Collect <b id="goal-n">10</b> Shawarmas to win <span class="ico-inline"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(32 32 32)"><path d="M22 10c0-4 20-4 20 0l4 34c0 8-28 8-28 0z" fill="#f2d9a0" stroke="#c99a52" stroke-width="3" stroke-linejoin="round"/><path d="M19 38h26l1 6c0 8-28 8-28 0z" fill="#fffdf6" stroke="#d8c9a8" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 43h24" stroke="#d94a3a" stroke-width="3.5"/><ellipse cx="32" cy="11" rx="10" ry="5" fill="#8a4a24"/><path d="M22 11c3-6 17-6 20 0" fill="none" stroke="#5fae4a" stroke-width="4" stroke-linecap="round"/></g></svg></span></p>
+      </div>
+      <div class="menu-bottom">
+        <p id="start-prompt" class="prompt">Press any key to start</p>
+      </div>
+    </div>
+
+    <!-- Pause screen -->
+    <div id="screen-pause" class="screen center hidden">
+      <div class="card">
+        <h2>Paused</h2>
+        <p class="sub">The camel is catching its breath.</p>
+        <button id="btn-resume" class="cta small">Resume</button>
+        <button id="btn-restart" class="ghost">Restart run</button>
+        <button id="btn-mute3" class="ghost">&#128266; Sound on</button>
+      </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="screen-over" class="screen center hidden">
+      <div class="card">
+        <h2 id="over-title">Camel down!</h2>
+        <p class="sub" id="over-sub"></p>
+        <div class="stats">
+          <div><b id="o-dist">0</b><small>metres</small></div>
+          <div><b id="o-shaw">0</b><small>shawarmas</small></div>
+          <div><b id="o-best">0</b><small>best</small></div>
+        </div>
+        <button id="btn-retry" class="cta small">Run again</button>
+        <a id="skip-link" class="ghost" href="#">Skip to the Interactive Resume &rarr;</a>
+      </div>
+    </div>
+
+    <div id="loading"><div><span class="bounce">&#128042;</span><p>Saddling up the camel&hellip;</p></div></div>
+  </div>
+
+  <script src="libraries/three.min.js"></script>
+  <script src="game.js?v=11"></script>
+</body>
 </html>
